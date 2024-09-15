@@ -79,7 +79,7 @@ contract Controller {
         string memory proof,
         uint256 sessionId,
         uint256 riskScore
-    ) public {
+    ) public returns (uint256) {
         // 1. Verify session
         UploadSession storage session = sessions[sessionId];
         require(session.user == msg.sender, "Invalid session owner");
@@ -107,6 +107,8 @@ contract Controller {
         // 6. Update proof and close session
         session.proof = proof;
         session.confirmed = true;
+
+        return nftId;
     }
 
     function getSession(uint256 sessionId) public view returns (UploadSession memory) {
@@ -116,4 +118,51 @@ contract Controller {
     function getDoc(string memory docId) public view returns (DataDoc memory) {
         return docs[docId];
     }
+
+    // Access Control: Start ===========================================================================================
+
+    // Access Control: NFT ID -> user address -> access granted (true/false)
+    mapping(uint256 => mapping(address => bool)) accessControl;
+
+    // Events
+    event GrantedAccess(uint256 nftId, address grantedTo);
+    event RevokedAccess(uint256 nftId, address revokedFrom);
+
+    // Modifier check permission to access GeneNFT
+    modifier onlyNftOwner(uint256 nftId) {
+        require(geneNFT.ownerOf(nftId) == msg.sender, "You are not the owner of this NFT.");
+        _;
+    }
+
+    // Grant permission to an user
+    function grantAccess(uint256 nftId, address user) public onlyNftOwner(nftId) {
+        // 1. Update access = true
+        accessControl[nftId][user] = true;
+        // 2. Emit event
+        emit GrantedAccess(nftId, user);
+    }
+
+    // Revoke permission from an user
+    function revokeAccess(uint256 nftId, address user) public onlyNftOwner(nftId) {
+        // 1. Update access = false
+        accessControl[nftId][user] = false;
+        // 2. Emit event
+        emit RevokedAccess(nftId, user);
+    }
+
+    // Request access DataDoc
+    function requestAccess(uint256 nftId) public view returns (DataDoc memory) {
+        // 1. Validate permission
+        require(
+            geneNFT.ownerOf(nftId) == msg.sender || accessControl[nftId][msg.sender],
+            "Access denied."
+        );
+
+        // 2. Get doc and return
+        string memory docId = nftDocs[nftId];
+        return docs[docId];
+    }
+
+    // Access Control: End ---------------------------------------------------------------------------------------------
+
 }
