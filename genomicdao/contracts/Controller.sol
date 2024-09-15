@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 pragma solidity ^0.8.9;
 
 import "@openzeppelin/contracts/utils/Counters.sol";
@@ -42,7 +43,29 @@ contract Controller {
     }
 
     function uploadData(string memory docId) public returns (uint256) {
-        // TODO: Implement this method: to start an uploading gene data session. The doc id is used to identify a unique gene profile. Also should check if the doc id has been submited to the system before. This method return the session id
+        // 1. Check if the doc id has been submitted to the system before.
+        require(!docSubmits[docId], "Doc already been submitted");
+
+        // 2. Increase sessionId then get it
+        uint256 sessionId = _sessionIdCounter.current();
+        _sessionIdCounter.increment();
+
+        // 3. Add new UploadSession with NO confirmed
+        sessions[sessionId] = UploadSession({
+            id: sessionId,
+            user: msg.sender,
+            proof: "",  // Proof will be confirmed later in `confirm()`
+            confirmed: false
+        });
+
+        // 4. Mark `docId` is submitted
+        docSubmits[docId] = true;
+
+        // 5. Emit UploadData event
+        emit UploadData(docId, sessionId);
+
+        // 6. Return sessionId
+        return sessionId;
     }
 
     function confirm(
@@ -52,24 +75,39 @@ contract Controller {
         uint256 sessionId,
         uint256 riskScore
     ) public {
-        // TODO: Implement this method: The proof here is used to verify that the result is returned from a valid computation on the gene data. For simplicity, we will skip the proof verification in this implementation. The gene data's owner will receive a NFT as a ownership certicate for his/her gene profile.
+        // 1. Verify session
+        UploadSession storage session = sessions[sessionId];
+        require(session.user == msg.sender, "Invalid session owner");
+        require(docSubmits[docId], "Session is ended");
+        require(!session.confirmed, "Doc already been submitted");
+        // require(bytes(session.proof).length == 0, "Session is ended");
 
-        // TODO: Verify proof, we can skip this step
+        // 2. TODO: Verify proof, we can skip this step
+        // require(keccak256(bytes(proof)) == keccak256(bytes("success")), "Invalid proof");
 
-        // TODO: Update doc content
+        // 3. Update doc content
+        docs[docId] = DataDoc({
+            id: docId,
+            hashContent: contentHash
+        });
 
-        // TODO: Mint NFT 
+        // 4. Mint NFT and link `nftDocs` with `docId`
+        uint256 nftId = geneNFT.safeMint(session.user);
+        nftDocs[nftId] = docId;
 
-        // TODO: Reward PCSP token based on risk stroke
+        // 5. Reward PCSP token based on risk stroke
+        pcspToken.reward(session.user, riskScore);
 
-        // TODO: Close session
+        // 6. Update proof and close session
+        session.proof = proof;
+        session.confirmed = true;
     }
 
-    function getSession(uint256 sessionId) public view returns(UploadSession memory) {
+    function getSession(uint256 sessionId) public view returns (UploadSession memory) {
         return sessions[sessionId];
     }
 
-    function getDoc(string memory docId) public view returns(DataDoc memory) {
+    function getDoc(string memory docId) public view returns (DataDoc memory) {
         return docs[docId];
     }
 }
