@@ -35,7 +35,12 @@ contract Controller {
     //
     // EVENTS
     //
+    // UploadData: Gene data is submitted
     event UploadData(string docId, uint256 sessionId);
+    // MintedGNFT: GNFT is minted
+    event MintedGNFT(string docId, uint256 sessionId, uint256 tokenId);
+    // RewardedPCSP: PCSP is rewarded
+    event RewardedPCSP(string docId, uint256 sessionId, uint256 riskScore);
 
     constructor(address nftAddress, address pcspAddress) {
         geneNFT = GeneNFT(nftAddress);
@@ -80,7 +85,6 @@ contract Controller {
         require(session.user == msg.sender, "Invalid session owner");
         require(docSubmits[docId], "Session is ended");
         require(!session.confirmed, "Doc already been submitted");
-        // require(bytes(session.proof).length == 0, "Session is ended");
 
         // 2. TODO: Verify proof, we can skip this step
         // require(keccak256(bytes(proof)) == keccak256(bytes("success")), "Invalid proof");
@@ -94,9 +98,11 @@ contract Controller {
         // 4. Mint NFT and link `nftDocs` with `docId`
         uint256 nftId = geneNFT.safeMint(session.user);
         nftDocs[nftId] = docId;
+        emit MintedGNFT(docId, sessionId, nftId);
 
         // 5. Reward PCSP token based on risk stroke
         pcspToken.reward(session.user, riskScore);
+        emit RewardedPCSP(docId, sessionId, riskScore);
 
         // 6. Update proof and close session
         session.proof = proof;
