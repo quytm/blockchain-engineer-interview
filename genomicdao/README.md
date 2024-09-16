@@ -14,7 +14,13 @@ npx hardhat help
 npx hardhat test
 REPORT_GAS=true npx hardhat test
 npx hardhat node
+```
+
+Deploy to subnet:
+```shell
 npx hardhat run scripts/deploy.js
+or 
+npx hardhat run scripts/deploy.js --network LIFENetworkLocal
 ```
 
 ### Setup Avalanche Subnets
