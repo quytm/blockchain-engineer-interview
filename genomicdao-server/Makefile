@@ -13,3 +13,7 @@ sm-clean:
 
 .PHONY: sm-generate
 sm-generate: sm-clean sm-solc-all sm-abigen-all
+
+.PHONY: run
+run:
+	go run cmd/main.go

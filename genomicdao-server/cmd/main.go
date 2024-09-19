@@ -111,6 +111,7 @@ func main() {
 
 	// 7. Get PCSP balance
 	time.Sleep(10 * time.Second) // wait for rewarding
+	fmt.Print("\n\n")
 	fmt.Printf("7. Get PCSP balance of user ---------------------------------------------------------------------\n")
 	userPCSPBalance, err := blPcspConnector.GetBalance(common.HexToAddress(userEthAddress))
 	if err != nil {
@@ -118,8 +119,9 @@ func main() {
 		return
 	}
 	fmt.Printf(" - User's PCSP Balance = %d\n", userPCSPBalance)
+	fmt.Print("\n\n")
 
-	fmt.Printf("n. Finished!!! ----------------------------------------------------------------------------------\n")
+	fmt.Printf("n. Finished!!! Press `Ctrl + C` to stop ---------------------------------------------------------\n")
 	waitForKillingSign()
 }
 
