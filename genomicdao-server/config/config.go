@@ -29,6 +29,24 @@ func (c Config) GetUserPublicKey() ([]byte, error) {
 	return crypto.FromECDSAPub(&ecdsaPrivateKey.PublicKey), nil
 }
 
+func (c Config) GetEthPublicAddress() (string, error) {
+	// Get public key
+	publicKeyBytes, err := c.GetUserPublicKey()
+	if err != nil {
+		return "", err
+	}
+
+	// Convert public key to an ECDSA format
+	publicKey, err := crypto.UnmarshalPubkey(publicKeyBytes)
+	if err != nil {
+		return "", err
+	}
+
+	// Get Ethereum address from the public key
+	ethAddress := crypto.PubkeyToAddress(*publicKey).Hex()
+	return ethAddress, nil
+}
+
 func (c Config) GetNetworkCfg() NetworkCfg {
 	switch c.UseNetwork {
 	case "network_avalanche_fuji_testnet":

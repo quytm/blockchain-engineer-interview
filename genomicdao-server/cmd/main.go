@@ -8,7 +8,9 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
+	"time"
 
+	"github.com/ethereum/go-ethereum/common"
 	"github.com/quytm/blockchain-engineer-interview/genomicdao-server/config"
 	msgqueue "github.com/quytm/blockchain-engineer-interview/genomicdao-server/pkg/messagequeue"
 	"github.com/quytm/blockchain-engineer-interview/genomicdao-server/pkg/utils"
@@ -29,12 +31,22 @@ func main() {
 		log.Fatal(err)
 		return
 	}
+	userEthAddress, err := cfg.GetEthPublicAddress()
+	if err != nil {
+		log.Fatal(err)
+		return
+	}
 	ctx := context.Background()
 	authService := auth.NewAuthService()
 	datastorageService := datastorage.NewDataStorageService()
 	teeService := tee.NewTeeService()
 	reportingService := reporting.NewReportingService()
 	blControllerConnector, err := blockchain.NewControllerBlockchainConnector(ctx, &cfg)
+	if err != nil {
+		log.Fatal(err)
+		return
+	}
+	blPcspConnector, err := blockchain.NewPcspBlockchainConnector(&cfg)
 	if err != nil {
 		log.Fatal(err)
 		return
@@ -97,12 +109,23 @@ func main() {
 	// 6. Confirm in blockchain
 	// run asynchronous in `confirmInBlockchain` method
 
+	// 7. Get PCSP balance
+	time.Sleep(10 * time.Second) // wait for rewarding
+	fmt.Printf("7. Get PCSP balance of user ---------------------------------------------------------------------\n")
+	userPCSPBalance, err := blPcspConnector.GetBalance(common.HexToAddress(userEthAddress))
+	if err != nil {
+		fmt.Println("Pcsp.GetBalance error :", err)
+		return
+	}
+	fmt.Printf(" - User's PCSP Balance = %d\n", userPCSPBalance)
+
 	fmt.Printf("n. Finished!!! ----------------------------------------------------------------------------------\n")
 	waitForKillingSign()
 }
 
+// confirmInBlockchain ... this is step 6, run after listening `UploadData` event
 func confirmInBlockchain(
-	blControllerConnector blockchain.IService, datastorageService datastorage.IService,
+	blControllerConnector blockchain.IConnector, datastorageService datastorage.IService,
 	data interface{}) {
 	// 6. Confirm in blockchain
 	fmt.Print("...\n...\n...\n")

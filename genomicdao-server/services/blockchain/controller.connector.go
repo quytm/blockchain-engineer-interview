@@ -15,12 +15,12 @@ import (
 )
 
 type (
-	IService interface {
+	IConnector interface {
 		UploadData(ctx context.Context, fileID string)
 		Confirm(ctx context.Context, fileID, contentHash, proof string, sessionID, riskScore *big.Int)
 	}
 
-	serviceImpl struct {
+	connectorImpl struct {
 		cfg                *config.Config
 		client             *ethclient.Client
 		chainID            *big.Int
@@ -29,7 +29,7 @@ type (
 	}
 )
 
-func NewControllerBlockchainConnector(ctx context.Context, cfg *config.Config) (IService, error) {
+func NewControllerBlockchainConnector(ctx context.Context, cfg *config.Config) (IConnector, error) {
 	networkCfg := cfg.GetNetworkCfg()
 	client, err := ethclient.Dial(networkCfg.Url)
 	if err != nil {
@@ -57,7 +57,7 @@ func NewControllerBlockchainConnector(ctx context.Context, cfg *config.Config) (
 		return nil, err
 	}
 
-	return &serviceImpl{
+	return &connectorImpl{
 		cfg:                cfg,
 		client:             client,
 		chainID:            chainID,
@@ -68,7 +68,7 @@ func NewControllerBlockchainConnector(ctx context.Context, cfg *config.Config) (
 
 // ---------------------------------------------------------------------------------------------------------------------
 
-func (c *serviceImpl) UploadData(ctx context.Context, fileID string) {
+func (c *connectorImpl) UploadData(ctx context.Context, fileID string) {
 	// 1. Create a new transactor with chain ID
 	txnOpts, err := bind.NewKeyedTransactorWithChainID(c.privateKey, c.chainID)
 	if err != nil {
@@ -94,7 +94,7 @@ func (c *serviceImpl) UploadData(ctx context.Context, fileID string) {
 	fmt.Printf(" - UploadData: txn hash = %s\n", txn.Hash())
 }
 
-func (c *serviceImpl) Confirm(ctx context.Context, fileID, contentHash, proof string, sessionID, riskScore *big.Int) {
+func (c *connectorImpl) Confirm(ctx context.Context, fileID, contentHash, proof string, sessionID, riskScore *big.Int) {
 	// 1. Create a new transactor with chain ID
 	txnOpts, err := bind.NewKeyedTransactorWithChainID(c.privateKey, c.chainID)
 	if err != nil {
