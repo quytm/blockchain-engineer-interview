@@ -1,0 +1,4 @@
+/.idea
+/contracts/abi
+.env
+config.yml

@@ -1,0 +1,27 @@
+server:
+  http:
+    host: localhost
+    port: 1010
+
+user_private_key: 'your private key'
+use_network: network_avalanche_fuji_testnet
+
+network_local:
+  url: http://127.0.0.1:9650/ext/bc/LIFENetwork/rpc
+  url_ws: 'not support local'
+  controller:
+    address: 0xb99441DA4A918604d4ee7D1CB20B362Bd3c12705
+  post_covid_stroke_prevention:
+    address: 0x5F909f607A29156Dd9Fc43382d09420bba7799A6
+  gene_nft:
+    address: 0x4359190563c0F38C84037a28288E01A2b1011Ec8
+
+network_avalanche_fuji_testnet:
+  url: https://api.avax-test.network/ext/bc/C/rpc
+  url_ws: wss://api.avax-test.network/ext/bc/C/ws
+  controller:
+    address: 0x53647222D19569e55b03699B5700C29eFaff8F7E
+  post_covid_stroke_prevention:
+    address: 0xd5e84AE26fC19E2BD0dbB8Aa5595498Bd88DCAbF
+  gene_nft:
+    address: 0x7538184b9285e57Af0856A5264A25e8575bA064d
