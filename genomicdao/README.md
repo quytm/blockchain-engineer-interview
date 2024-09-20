@@ -2,6 +2,7 @@
 
 This project demonstrates a basic Hardhat use case. It comes with a sample contract, a test for that contract, and a script that deploys that contract.
 
+## Setup
 Try running some of the following tasks:
 
 ```shell
@@ -13,7 +14,21 @@ npx hardhat help
 npx hardhat test
 REPORT_GAS=true npx hardhat test
 npx hardhat node
+```
+
+Deploy to subnet:
+```shell
 npx hardhat run scripts/deploy.js
+or 
+npx hardhat run scripts/deploy.js --network LIFENetworkLocal
+```
+
+### Setup Avalanche Subnets
+- Install [Avalanche Subnets](https://docs.avax.network/subnets/build-first-subnet)
+- Create and Deploy LIFENetwork in local
+```shell
+  avalanche blockchain create LIFENetwork --test-defaults --evm --evm-chain-id 9999 --evm-token LIFE
+  avalanche blockchain deploy LIFENetwork --local
 ```
 
 ## Tech debt
